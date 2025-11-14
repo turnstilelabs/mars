@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MARS — Math Artifact Retrieval Scoring</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@700;900&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap"
+        rel="stylesheet">
+
+    <!-- Link to the external stylesheet -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- MathJax for LaTeX rendering -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['\\[', '\\]'], ['$$', '$$']],
+                processEscapes: true,
+                packages: { '[+]': ['ams', 'newcommand', 'textmacros'] },
+                macros: {
+                    Hilbert: '{\\mathcal{H}}',
+                    zer: '{\\mathrm{zer}}',
+                    Fix: '{\\mathrm{Fix}}',
+                    setto: '{\\rightrightarrows}',
+                    bM: '{\\mathbf{M}}',
+                    bF: '{\\mathbf{F}}',
+                    bS: '{\\mathbf{S}}',
+                    bN: '{\\mathbf{N}}',
+                    XR: '{\\mathcal{X}_R}',
+                    AR: '{\\mathcal{A}_R}',
+                    BR: '{\\mathcal{B}_R}',
+                    CR: '{\\mathcal{C}_R}',
+                    XRe: '{\\mathcal{X}_e}',
+                    ARe: '{\\mathcal{A}_e}',
+                    PR: '{\\mathcal{P}_R}',
+                    MR: '{\\mathcal{M}_R}',
+                    RR: '{\\mathbb{R}}',
+                    Id: '{\\mathrm{Id}}',
+                    LR: '{\\mathcal{L}}',
+                    bx: '{\\mathbf{x}}',
+                    bz: '{\\mathbf{z}}'
+                }
+            },
+            options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <!-- Link to the external JavaScript, with 'defer' to ensure HTML loads first -->
+    <script src="script.js" defer></script>
+</head>
+
+<body>
+
+    <header class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">MARS</h1>
+            <h2 class="hero-subtitle">Math Artifact Retrieval Scoring</h2>
+            <p class="hero-text">
+                A focused experiment to measure large language models' ability to search the mathematical literature and
+                retrieve precise statements.
+            </p>
+        </div>
+    </header>
+
+    <main>
+        <section id="setup" class="manifesto">
+            <h2>How MARS Works</h2>
+            <p>We wish to measure LLM retrieval performance with a simple, reproducible protocol:</p>
+            <ul>
+                <li>
+                    <strong>Sample & Extract:</strong> We randomly sample mathematics papers from arXiv
+                    across different time periods and extract multiple theorems from each one.
+                </li>
+                <li>
+                    <strong>Generate Queries:</strong> For each theorem, we generate synthetic queries across distinct
+                    categories to simulate a range of real-world use cases. These queries span from
+                    <code>precise_assertion</code> and <code>imperfect_recall</code>, which test the model's ability to
+                    find a result from a nearly exact or slightly flawed memory, to broader inquiries like
+                    <code>exploratory_search</code> and <code>conceptual_search</code>, which focus on the underlying
+                    topic or idea.
+                </li>
+                <li>
+                    <strong>Retrieve the Source:</strong> For a given synthetic query, we ask an LLM to identify
+                    the original paper it came from, without any other context.
+                </li>
+            </ul>
+            <p>We then check whether the model correctly identifies the source paper.
+                This process provides a clear benchmark of the LLMs' ability to navigate mathematical knowledge across
+                different eras.</p>
+            <hr>
+            <p><strong>Our initial findings highlight the difficulty of this task. In over 100 trials using
+                    GPT-5 (with web search disabled), the model failed to identify the correct source paper within its
+                    top five suggestions a single time...</strong></p>
+        </section>
+
+        <section id="app-section">
+            <h2>First Results</h2>
+            <h1 id="paper-title"></h1>
+            <div id="paper-controls" class="paper-controls"></div>
+
+            <div class="artifact-card">
+                <div class="artifact-header">
+                    <h3 id="artifact-id">Original Theorem</h3>
+                </div>
+                <div class="artifact-navigation">
+                    <span class="nav-button" id="prev-artifact" aria-label="Previous"></span>
+                    <div id="artifact-text-container">
+                        <p id="artifact-text"></p>
+                    </div>
+                    <span class="nav-button" id="next-artifact" aria-label="Next"></span>
+                </div>
+                <div class="columns">
+                    <div class="column">
+                        <h3>Synthetic Queries</h3>
+                        <div id="generated-queries"></div>
+                    </div>
+                    <div class="column">
+                        <h3>Candidate References</h3>
+                        <div id="candidate-references"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section id="prompts">
+            <h2>Prompts Used in the Experiments</h2>
+
+            <div class="artifact-card">
+                <div class="artifact-header">
+                    <h3>Synthetic Query Generation Prompt</h3>
+                </div>
+                <div class="prompt-section">
+                    <p><strong>System:</strong> You are a research mathematician simulator. Your task is to generate
+                        plausible search queries that a real mathematician would use when exploring a concept or
+                        looking for a specific type of result. Be realistic. Output must be a JSON object with a single
+                        key <code>"queries"</code> containing a list of strings.</p>
+                    <p><strong>User:</strong> Imagine you are a research mathematician. The <em>Artifact Text</em>
+                        below represents a mathematical theorem you have in mind. You do not know that this has been
+                        published, and you have no knowledge of the paper it comes from. Your goal is to generate
+                        search queries to discover if a result like this exists in the literature.</p>
+
+                    <h4>Styles</h4>
+                    <ul>
+                        <li><strong>precise_assertion:</strong> Formulate the central claim of the theorem as a precise
+                            statement or question so it would likely find this exact result.
+                            <ul>
+                                <li>Frame as a search for a known result (e.g., <em>Korovkin's theorem for sublinear
+                                        operators</em>).</li>
+                                <li>Include LaTeX where it adds precision, e.g., <code>$\\mathbb(R)^(N)$</code>,
+                                    <code>$\\mathcal(F)(X)$</code>.
+                                </li>
+                            </ul>
+                        </li>
+                        <li><strong>imperfect_recall:</strong> Simulate realistic, slightly flawed memory. Keep it
+                            technically precise but introduce minor inaccuracies.
+                            <ul>
+                                <li>Omit a secondary condition or hypothesis.</li>
+                                <li>Change variable names (e.g., use <code>K</code> instead of <code>X</code>).</li>
+                                <li>Alter a technical term slightly (e.g., <em>monotone positive operators</em> vs.
+                                    <em>monotone and sublinear operators</em>).
+                                </li>
+                            </ul>
+                        </li>
+                        <li><strong>conceptual_search:</strong> Ask about the relationship/implication in less formal
+                            terms; focus on the meaning (e.g., <em>when does pointwise convergence imply uniform
+                                convergence?</em>).</li>
+                        <li><strong>exploratory_search:</strong> Use broader, higher-level queries about the general
+                            topic or field (e.g., <em>nonlinear approximation theory</em>, <em>positive linear
+                                operators</em>).</li>
+                    </ul>
+
+                    <h4>Common Rules</h4>
+                    <ul>
+                        <li>Never use names, dates, or direct quotes from the paper's title or abstract.</li>
+                        <li>Never include reference labels like <code>\\label{...}</code>.</li>
+                        <li>Avoid instructional phrasing like “find a paper on”.</li>
+                        <li>Use LaTeX when it adds precision.</li>
+                    </ul>
+
+                    <p><strong>Output:</strong> JSON with a single key <code>queries</code> containing a list of
+                        strings.
+                        Generate exactly <code>k</code> queries.</p>
+                </div>
+            </div>
+
+            <div class="artifact-card">
+                <div class="artifact-header">
+                    <h3>Closed-Book Retrieval Prompt</h3>
+                </div>
+                <div class="prompt-section">
+                    <p><strong>System:</strong> You are an expert research assistant with deep knowledge of academic
+                        literature (arXiv and major mathematical journals). Your task is to recall and cite the most
+                        relevant research papers for a given query. Respond strictly in the JSON format provided.</p>
+
+                    <p><strong>User:</strong> Based on your knowledge, what are the top <code>k</code> most likely
+                        research papers a researcher is looking for the given <em>query</em>?</p>
+
+                    <h4>Rules</h4>
+                    <ul>
+                        <li>Provide a ranked list in JSON; the first entry is your top guess.</li>
+                        <li>Each title must be the exact, full title of the publication.</li>
+                        <li>Prioritize primary research articles; suggest surveys/books only for very broad queries.
+                        </li>
+                    </ul>
+
+                    <h4>Expected JSON</h4>
+                    <pre><code>{
+  "candidates": [
+    {
+      "reference": { "title": "The full and exact title of the #1 paper" },
+      "confidence": 0.9,
+      "reasoning": "A brief justification for why this is the best match."
+    },
+    {
+      "reference": { "title": "The full and exact title of the #2 paper" },
+      "confidence": 0.8,
+      "reasoning": "A brief justification for why this is a plausible alternative."
+    }
+  ]
+}</code></pre>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>MARS is a focused experiment by Turnstile Labs to benchmark mathematical retrieval.</p>
+        <p>&copy; 2025 Turnstile Labs. Building the future of mathematical reasoning.</p>
+    </footer>
+
+</body>
+
+</html>
