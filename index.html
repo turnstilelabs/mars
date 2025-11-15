@@ -73,8 +73,9 @@
     <main>
         <section id="setup" class="manifesto">
             <h2>How MARS Works</h2>
-            <p>We wish to measure LLM retrieval performance with a simple, reproducible protocol:</p>
-            <ul>
+            <p>We wish to measure LLM retrieval performance on mathematical statements with a simple and reproducible
+                protocol:</p>
+            <ol>
                 <li>
                     <strong>Sample & Extract:</strong> We randomly sample mathematics papers from arXiv
                     across different time periods and extract multiple theorems from each one.
@@ -91,18 +92,19 @@
                     <strong>Retrieve the Source:</strong> For a given synthetic query, we ask an LLM to identify
                     the original paper it came from, without any other context.
                 </li>
-            </ul>
+            </ol>
             <p>We then check whether the model correctly identifies the source paper.
-                This process provides a clear benchmark of the LLMs' ability to navigate mathematical knowledge across
+                This process provides a clear benchmark of LLMs' ability to navigate mathematical knowledge across
                 different eras.</p>
             <hr>
-            <p><strong>Our initial findings highlight the difficulty of this task. In over 100 trials using
-                    GPT-5 (with web search disabled), the model failed to identify the correct source paper within its
+            <p><strong>Our initial findings highlight the difficulty of this task for plain LLMs without internet
+                    access. In over 100 trials using
+                    GPT-5 (without web search), the model failed to identify the correct source paper within its
                     top five suggestions a single time...</strong></p>
         </section>
 
         <section id="app-section">
-            <h2>First Results</h2>
+            <h2>Preliminary Results</h2>
             <h1 id="paper-title"></h1>
             <div id="paper-controls" class="paper-controls"></div>
 
